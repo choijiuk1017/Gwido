@@ -14,4 +14,11 @@ class PROJECT_GWIDO_API APlayerCharacter : public AUnit
 {
 	GENERATED_BODY()
 	
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UCameraComponent* CameraComp;
 };

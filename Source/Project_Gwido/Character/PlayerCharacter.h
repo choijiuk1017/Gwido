@@ -14,6 +14,9 @@ class PROJECT_GWIDO_API APlayerCharacter : public AUnit
 {
 	GENERATED_BODY()
 	
+public:
+	APlayerCharacter();
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

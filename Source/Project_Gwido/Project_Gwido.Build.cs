@@ -8,7 +8,23 @@ public class Project_Gwido : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core", 
+			"CoreUObject", 
+			"Engine", 
+			"InputCore", 
+			"EnhancedInput" ,
+			"UMG",
+            "Slate",
+            "SlateCore" ,
+
+            "NavigationSystem",
+            "AIModule",
+            "GameplayTasks",
+            "LevelSequence",
+            "MovieScene",
+            "MovieSceneTracks"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

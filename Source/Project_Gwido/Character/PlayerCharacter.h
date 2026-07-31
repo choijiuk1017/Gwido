@@ -17,6 +17,8 @@ class PROJECT_GWIDO_API APlayerCharacter : public AUnit
 public:
 	APlayerCharacter();
 
+	void Move(const FVector2D& MovementInput);
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -24,4 +26,5 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UCameraComponent* CameraComp;
+
 };

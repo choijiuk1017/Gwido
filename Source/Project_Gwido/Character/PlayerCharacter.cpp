@@ -25,3 +25,24 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	GetCharacterMovement()->bIgnoreBaseRotation= true;
 }
+
+void APlayerCharacter::Move(const FVector2D& MovementInput)
+{
+    if (!Controller)
+    {
+        return;
+    }
+
+    const FRotator ControlRotation = Controller->GetControlRotation();
+    const FRotator YawRotation(0.0f, ControlRotation.Yaw, 0.0f);
+
+    const FVector ForwardDirection =
+        FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+    const FVector RightDirection =
+        FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+    AddMovementInput(ForwardDirection, MovementInput.Y);
+    AddMovementInput(RightDirection, MovementInput.X);
+}
+

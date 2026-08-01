@@ -15,15 +15,34 @@ APlayerCharacter::APlayerCharacter()
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -90.0f), FQuat(FRotator(0.0f, -90.0f, 0.0f)));
 
-	SpringArmComp->SetupAttachment(GetMesh());
+    SpringArmComp->SetupAttachment(RootComponent);
 
-	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
+    CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
 
-	SpringArmComp->bUsePawnControlRotation = true;
+    SpringArmComp->TargetArmLength = 200.0f;
+    SpringArmComp->SetRelativeLocation(FVector(0.0f, 0.0f, 70.0f));
 
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	GetCharacterMovement()->bIgnoreBaseRotation= true;
+    SpringArmComp->bUsePawnControlRotation = true;
+    SpringArmComp->bInheritPitch = true;
+    SpringArmComp->bInheritYaw = true;
+    SpringArmComp->bInheritRoll = false;
+
+    SpringArmComp->bEnableCameraLag = true;
+    SpringArmComp->CameraLagSpeed = 15.0f;
+
+    SpringArmComp->bEnableCameraRotationLag = true;
+    SpringArmComp->CameraRotationLagSpeed = 20.0f;
+
+    CameraComp->bUsePawnControlRotation = false;
+
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationYaw = false;
+    bUseControllerRotationRoll = false;
+
+    GetCharacterMovement()->bOrientRotationToMovement = true;
+    GetCharacterMovement()->bUseControllerDesiredRotation = false;
+
+    GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 }
 
 void APlayerCharacter::Move(const FVector2D& MovementInput)
@@ -46,3 +65,13 @@ void APlayerCharacter::Move(const FVector2D& MovementInput)
     AddMovementInput(RightDirection, MovementInput.X);
 }
 
+void APlayerCharacter::Look(const FVector2D& LookInput)
+{
+    if (!Controller)
+    {
+        return;
+    }
+
+    AddControllerYawInput(LookInput.X);
+    AddControllerPitchInput(LookInput.Y);
+}

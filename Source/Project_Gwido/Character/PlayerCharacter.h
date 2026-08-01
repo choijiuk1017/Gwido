@@ -19,6 +19,8 @@ public:
 
 	void Move(const FVector2D& MovementInput);
 
+	void Look(const FVector2D& LookInput);
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

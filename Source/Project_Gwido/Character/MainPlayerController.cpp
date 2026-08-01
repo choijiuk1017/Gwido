@@ -46,8 +46,12 @@ void AMainPlayerController::InputLook(const FInputActionValue& Value)
 {
 	const FVector2D LookInput = Value.Get<FVector2D>();
 
-	AddYawInput(LookInput.X);
-	AddPitchInput(LookInput.Y);
+
+	if (APlayerCharacter* PlayerCharacter =
+		Cast<APlayerCharacter>(GetPawn()))
+	{
+		PlayerCharacter->Look(LookInput);
+	}
 }
 
 APlayerCharacter* AMainPlayerController::GetPlayerCharacter() const

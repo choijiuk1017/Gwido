@@ -17,11 +17,21 @@ class PROJECT_GWIDO_API APlayerCharacter : public AUnit
 public:
 	APlayerCharacter();
 
+#pragma region Movement
+
 	void Move(const FVector2D& MovementInput);
 
 	void Look(const FVector2D& LookInput);
+	
+	void BeginSprint();
+
+	void EndSprint();
+
+#pragma endregion
 
 protected:
+
+	bool bIsSprinting = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class USpringArmComponent* SpringArmComp;

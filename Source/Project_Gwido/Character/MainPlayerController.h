@@ -32,17 +32,27 @@ protected:
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> MoveAction;
+	TObjectPtr<UInputAction> IA_Move;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> LookAction;
+	TObjectPtr<UInputAction> IA_Look;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_Sprint;
 #pragma endregion 
 
 private:
 
+	UPROPERTY()
+	TObjectPtr<APlayerCharacter> CachedCharacter;
+
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
+
 	void InputMove(const FInputActionValue& Value);
 	void InputLook(const FInputActionValue& Value);
+	void InputSprint_Begin();
+	void InputSprint_End();
 
-	APlayerCharacter* GetPlayerCharacter() const;
 
 };

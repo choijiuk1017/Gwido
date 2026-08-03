@@ -75,3 +75,18 @@ void APlayerCharacter::Look(const FVector2D& LookInput)
     AddControllerYawInput(LookInput.X);
     AddControllerPitchInput(LookInput.Y);
 }
+
+void APlayerCharacter::BeginSprint()
+{
+    if (bIsSprinting) return;
+
+    bIsSprinting = true;
+
+    GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
+}
+
+void APlayerCharacter::EndSprint()
+{
+    bIsSprinting = false;
+    GetCharacterMovement()->MaxWalkSpeed = 350.0f;
+}

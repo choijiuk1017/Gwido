@@ -28,33 +28,55 @@ void AMainPlayerController::SetupInputComponent()
 
 	UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(InputComponent);
 
-	EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainPlayerController::InputMove);
-	EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMainPlayerController::InputLook);
+	EIC->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AMainPlayerController::InputMove);
+	EIC->BindAction(IA_Look, ETriggerEvent::Triggered, this, &AMainPlayerController::InputLook);
+	EIC->BindAction(IA_Sprint, ETriggerEvent::Triggered, this, &AMainPlayerController::InputSprint_Begin);
+	EIC->BindAction(IA_Sprint, ETriggerEvent::Completed, this, &AMainPlayerController::InputSprint_End);
+}
+
+void AMainPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	CachedCharacter = Cast<APlayerCharacter>(InPawn);
+}
+
+void AMainPlayerController::OnUnPossess()
+{
+	Super::OnUnPossess();
+
+	CachedCharacter = nullptr;
 }
 
 void AMainPlayerController::InputMove(const FInputActionValue& Value)
 {
+	if (!CachedCharacter) return;
+
 	const FVector2D MovementInput = Value.Get<FVector2D>();
 
-	if (APlayerCharacter* PlayerCharacter = GetPlayerCharacter())
-	{
-		PlayerCharacter->Move(MovementInput);
-	}
+	CachedCharacter->Move(MovementInput);
 }
 
 void AMainPlayerController::InputLook(const FInputActionValue& Value)
 {
+	if (!CachedCharacter) return;
+
 	const FVector2D LookInput = Value.Get<FVector2D>();
 
-
-	if (APlayerCharacter* PlayerCharacter =
-		Cast<APlayerCharacter>(GetPawn()))
-	{
-		PlayerCharacter->Look(LookInput);
-	}
+	CachedCharacter->Look(LookInput);
 }
 
-APlayerCharacter* AMainPlayerController::GetPlayerCharacter() const
+void AMainPlayerController::InputSprint_Begin()
 {
-	return Cast<APlayerCharacter>(GetPawn());
+	if (!CachedCharacter) return;
+
+	CachedCharacter->BeginSprint();
 }
+
+void AMainPlayerController::InputSprint_End()
+{
+	if (!CachedCharacter) return;
+
+	CachedCharacter->EndSprint();
+}
+

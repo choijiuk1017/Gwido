@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+class AUnit;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECT_GWIDO_API UCombatComponent : public UActorComponent
@@ -16,13 +17,15 @@ public:
 	// Sets default values for this component's properties
 	UCombatComponent();
 
+	void BaseAttack();
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+private:
+
+	UPROPERTY()
+	TObjectPtr<AUnit> OwnerUnit;
 };

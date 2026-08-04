@@ -41,11 +41,6 @@ public:
 
 	bool IsHostileTo(const AUnit* OtherUnit) const;
 
-	UAttributeComponent* GetAttributeComponent() const;
-	UCombatComponent* GetCombatComponent() const;
-	UPostureComponent* GetPostureComponent() const;
-	UStateComponent* GetStateComponent() const;
-
 protected:
 	virtual void BeginPlay() override;
 

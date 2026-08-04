@@ -39,6 +39,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> IA_Sprint;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_BaseAttack;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_Dash;
+
 #pragma endregion 
 
 private:
@@ -53,6 +60,9 @@ private:
 	void InputLook(const FInputActionValue& Value);
 	void InputSprint_Begin();
 	void InputSprint_End();
+	void InputBaseAttack();
+	void InputDash();
+
 
 
 };

@@ -80,3 +80,15 @@ void AMainPlayerController::InputSprint_End()
 	CachedCharacter->EndSprint();
 }
 
+void AMainPlayerController::InputBaseAttack()
+{
+	if (!CachedCharacter) return;
+
+	CachedCharacter->RequestBaseAttack();
+}
+
+void AMainPlayerController::InputDash()
+{
+	if (!CachedCharacter) return;
+}
+

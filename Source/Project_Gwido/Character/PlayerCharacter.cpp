@@ -3,6 +3,8 @@
 
 #include "Character/PlayerCharacter.h"
 
+#include "Component/CombatComponent.h"
+
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -45,6 +47,13 @@ APlayerCharacter::APlayerCharacter()
     GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 }
 
+void APlayerCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+
+    Faction = EUnitFaction::Player;
+}
+
 void APlayerCharacter::Move(const FVector2D& MovementInput)
 {
     if (!Controller)
@@ -55,11 +64,9 @@ void APlayerCharacter::Move(const FVector2D& MovementInput)
     const FRotator ControlRotation = Controller->GetControlRotation();
     const FRotator YawRotation(0.0f, ControlRotation.Yaw, 0.0f);
 
-    const FVector ForwardDirection =
-        FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+    const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-    const FVector RightDirection =
-        FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+    const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
     AddMovementInput(ForwardDirection, MovementInput.Y);
     AddMovementInput(RightDirection, MovementInput.X);
@@ -89,4 +96,9 @@ void APlayerCharacter::EndSprint()
 {
     bIsSprinting = false;
     GetCharacterMovement()->MaxWalkSpeed = 350.0f;
+}
+
+void APlayerCharacter::RequestBaseAttack()
+{
+    CombatComponent->BaseAttack();
 }

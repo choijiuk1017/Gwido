@@ -29,7 +29,14 @@ public:
 
 #pragma endregion
 
+#pragma region Combat
+	void RequestBaseAttack();
+
+#pragma endregion
+
 protected:
+
+	virtual void BeginPlay() override;
 
 	bool bIsSprinting = false;
 

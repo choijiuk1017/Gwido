@@ -5,7 +5,6 @@
 
 #include "Character/Unit.h"
 
-
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
 {
@@ -32,4 +31,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	// ...
 }
+
+
 

@@ -3,7 +3,7 @@
 
 #include "Character/PlayerCharacter.h"
 
-#include "Component/CombatComponent.h"
+#include "Component/PlayerCombatComponent.h"
 
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -11,6 +11,8 @@
 
 APlayerCharacter::APlayerCharacter()
 {
+    CombatComponent = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("CombatComponent"));
+
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
@@ -54,6 +56,7 @@ void APlayerCharacter::BeginPlay()
     Faction = EUnitFaction::Player;
 }
 
+#pragma region Movement
 void APlayerCharacter::Move(const FVector2D& MovementInput)
 {
     if (!Controller)
@@ -97,6 +100,8 @@ void APlayerCharacter::EndSprint()
     bIsSprinting = false;
     GetCharacterMovement()->MaxWalkSpeed = 350.0f;
 }
+
+#pragma endregion
 
 void APlayerCharacter::RequestBaseAttack()
 {

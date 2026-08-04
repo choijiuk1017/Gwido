@@ -4,7 +4,6 @@
 #include "Character/Unit.h"
 
 #include "Component/AttributeComponent.h"
-#include "Component/CombatComponent.h"
 #include "Component/PostureComponent.h"
 #include "Component/StateComponent.h"
 
@@ -15,7 +14,6 @@ AUnit::AUnit()
 	PrimaryActorTick.bCanEverTick = false;
 
 	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
-	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	PostureComponent = CreateDefaultSubobject<UPostureComponent>(TEXT("PostureComponent"));
 	StateComponent = CreateDefaultSubobject<UStateComponent>(TEXT("StateComponent"));
 
@@ -51,30 +49,10 @@ void AUnit::Die()
 
 bool AUnit::IsDead() const
 {
-	return false;
+	return bIsDead;
 }
 
 bool AUnit::IsHostileTo(const AUnit* OtherUnit) const
 {
 	return OtherUnit && Faction != OtherUnit->Faction;
-}
-
-UAttributeComponent* AUnit::GetAttributeComponent() const
-{
-	return AttributeComponent;
-}
-
-UCombatComponent* AUnit::GetCombatComponent() const
-{
-	return CombatComponent;
-}
-
-UStateComponent* AUnit::GetStateComponent() const
-{
-	return StateComponent;
-}
-
-UPostureComponent* AUnit::GetPostureComponent() const
-{
-	return PostureComponent;
 }

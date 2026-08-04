@@ -7,7 +7,6 @@
 #include "Unit.generated.h"
 
 class UAttributeComponent;
-class UCombatComponent;
 class UPostureComponent;
 class UStateComponent;
 
@@ -28,11 +27,9 @@ class PROJECT_GWIDO_API AUnit : public ACharacter
 public:
 	AUnit();
 
-	virtual void Tick(float DeltaTime) override;
+#pragma region Combat
 
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual void ReceiveHit(float Damage, AActor* DamageCauser);
+	bool bIsAttacking = false;
 
 	virtual void Die();
 
@@ -41,23 +38,34 @@ public:
 
 	bool IsHostileTo(const AUnit* OtherUnit) const;
 
+	virtual void ReceiveHit(float Damage, AActor* DamageCauser);
+
+#pragma endregion
+
+
 protected:
 	virtual void BeginPlay() override;
-
+	
+#pragma region Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
 	TObjectPtr<UAttributeComponent> AttributeComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
-	TObjectPtr<UCombatComponent> CombatComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
 	TObjectPtr<UPostureComponent> PostureComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
 	TObjectPtr<UStateComponent> StateComponent;
+#pragma endregion
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit")
 	EUnitFaction Faction = EUnitFaction::Neutral;
-private:
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Unit")
+	bool bIsDead;
+
+
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+private:
 };

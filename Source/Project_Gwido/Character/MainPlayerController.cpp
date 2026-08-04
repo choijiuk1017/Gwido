@@ -32,6 +32,7 @@ void AMainPlayerController::SetupInputComponent()
 	EIC->BindAction(IA_Look, ETriggerEvent::Triggered, this, &AMainPlayerController::InputLook);
 	EIC->BindAction(IA_Sprint, ETriggerEvent::Triggered, this, &AMainPlayerController::InputSprint_Begin);
 	EIC->BindAction(IA_Sprint, ETriggerEvent::Completed, this, &AMainPlayerController::InputSprint_End);
+	EIC->BindAction(IA_BaseAttack, ETriggerEvent::Triggered, this, &AMainPlayerController::InputBaseAttack);
 }
 
 void AMainPlayerController::OnPossess(APawn* InPawn)

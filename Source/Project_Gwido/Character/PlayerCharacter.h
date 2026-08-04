@@ -6,6 +6,8 @@
 #include "Character/Unit.h"
 #include "PlayerCharacter.generated.h"
 
+class UAnimMontage;
+class UPlayerCombatComponent;
 /**
  * 
  */
@@ -30,6 +32,11 @@ public:
 #pragma endregion
 
 #pragma region Combat
+	UPROPERTY(EditAnywhere, Category = "AnimMontage", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UAnimMontage> ComboMontage;
+
+	int32 MaxComboCount = 3;
+
 	void RequestBaseAttack();
 
 #pragma endregion
@@ -39,6 +46,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	bool bIsSprinting = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	TObjectPtr<UPlayerCombatComponent> CombatComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class USpringArmComponent* SpringArmComp;

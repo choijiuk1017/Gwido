@@ -8,6 +8,8 @@
 
 class UAnimMontage;
 class UPlayerCombatComponent;
+class UComboData;
+
 /**
  * 
  */
@@ -32,10 +34,8 @@ public:
 #pragma endregion
 
 #pragma region Combat
-	UPROPERTY(EditAnywhere, Category = "AnimMontage", Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UAnimMontage> ComboMontage;
-
-	int32 MaxComboCount = 3;
+	UPROPERTY(EditAnywhere, Category = "Data")
+	TArray<TObjectPtr<UComboData>> ComboDatas;
 
 	void RequestBaseAttack();
 
@@ -55,5 +55,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UCameraComponent* CameraComp;
+
 
 };

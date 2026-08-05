@@ -28,6 +28,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
 	float ComboCheckTime = 0.45f;
 
+	int32 CurrentWeaponIndex = 0;
+
 	void BaseAttack();
 
 	void ComboStart();
@@ -40,6 +42,9 @@ public:
 
 #pragma endregion
 	
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	UPROPERTY()
 	TObjectPtr<APlayerCharacter> OwnerPlayer;

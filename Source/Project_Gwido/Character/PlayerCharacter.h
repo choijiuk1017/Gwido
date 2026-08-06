@@ -8,7 +8,7 @@
 
 class UAnimMontage;
 class UPlayerCombatComponent;
-class UComboData;
+class UWeaponCombatData;
 
 /**
  * 
@@ -34,10 +34,13 @@ public:
 #pragma endregion
 
 #pragma region Combat
-	UPROPERTY(EditAnywhere, Category = "Data")
-	TArray<TObjectPtr<UComboData>> ComboDatas;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	TArray<TObjectPtr<UWeaponCombatData>> WeaponCombatDatas;
 
 	void RequestBaseAttack();
+
+	void RequestChangeNextWeapon();
 
 #pragma endregion
 
@@ -45,10 +48,21 @@ protected:
 
 	virtual void BeginPlay() override;
 
+#pragma region Movement
+
 	bool bIsSprinting = false;
+
+#pragma endregion
+
+#pragma region Combat
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	int32 CurrentWeaponIndex = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
 	TObjectPtr<UPlayerCombatComponent> CombatComponent;
+
+#pragma endregion
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class USpringArmComponent* SpringArmComp;

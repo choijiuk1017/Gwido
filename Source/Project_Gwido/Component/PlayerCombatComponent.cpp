@@ -5,6 +5,7 @@
 
 #include "Character/PlayerCharacter.h"
 #include "DataAsset/ComboData.h"
+#include "DataAsset/WeaponCombatData.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -14,14 +15,20 @@ void UPlayerCombatComponent::BeginPlay()
 	Super::BeginPlay();
 
 	OwnerPlayer = Cast<APlayerCharacter>(GetOwner());
+}
 
-	if (!OwnerPlayer)
-	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerCombatComponent: OwnerPlayer 초기화 실패"));
-		return;
-	}
+void UPlayerCombatComponent::SetWeaponCombatData(UWeaponCombatData* NewWeaponData)
+{
+	if (!IsValid(NewWeaponData)) return;
 
-	UE_LOG(LogTemp, Warning, TEXT("PlayerCombatComponent: OwnerPlayer 초기화 성공"));
+	if (CurrentWeaponData == NewWeaponData) return;
+
+	ResetCombo();
+
+	UWeaponCombatData* PreviousWeaponData = CurrentWeaponData;
+	CurrentWeaponData = NewWeaponData;
+
+	HandleWeaponDataChanged(PreviousWeaponData,CurrentWeaponData);
 }
 
 void UPlayerCombatComponent::BaseAttack()
@@ -60,7 +67,7 @@ void UPlayerCombatComponent::ComboStart()
 	//	CharacterMovement->SetMovementMode(EMovementMode::MOVE_None);
 	//}
 
-	UComboData* ComboData = OwnerPlayer->ComboDatas[CurrentWeaponIndex];
+	UComboData* ComboData = GetCurrentComboData();
 
 	if (!ComboData || !ComboData->ComboMontage) return;
 
@@ -98,9 +105,12 @@ void UPlayerCombatComponent::ComboCheck()
 
 	if (!bHasComboInput) return;
 
-	UComboData* ComboData = OwnerPlayer->ComboDatas[CurrentWeaponIndex];
+	UComboData* ComboData = GetCurrentComboData();
 
-	if (!ComboData || !ComboData->ComboMontage) return;
+	if (!ComboData || !ComboData->ComboMontage)
+	{
+		return;
+	}
 
 	CurrentComboCount = FMath::Clamp(CurrentComboCount + 1, 1, ComboData->MaxComboCount);
 
@@ -120,7 +130,7 @@ void UPlayerCombatComponent::SetComboTimer()
 {
 	if (!OwnerPlayer) return;
 
-	UComboData* ComboData = OwnerPlayer->ComboDatas[CurrentWeaponIndex];
+	UComboData* ComboData = GetCurrentComboData();
 
 	if (!ComboData || !ComboData->ComboMontage) return;
 
@@ -145,3 +155,39 @@ void UPlayerCombatComponent::SetComboTimer()
 
 }
 
+void UPlayerCombatComponent::ResetCombo()
+{
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ComboTimerHandle);
+	}
+
+	ComboTimerHandle.Invalidate();
+
+	CurrentComboCount = 0;
+	bHasComboInput = false;
+
+	if (OwnerPlayer)
+	{
+		OwnerPlayer->bIsAttacking = false;
+	}
+}
+
+
+
+void UPlayerCombatComponent::HandleWeaponDataChanged(UWeaponCombatData* PreviousWeaponData, UWeaponCombatData* NewWeaponData)
+{
+	if (!OwnerPlayer || !CurrentWeaponData) return;
+
+	// 무기 변경 시 로직
+}
+
+UComboData* UPlayerCombatComponent::GetCurrentComboData() const
+{
+	if (!CurrentWeaponData)
+	{
+		return nullptr;
+	}
+
+	return CurrentWeaponData->ComboData;
+}

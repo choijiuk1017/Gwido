@@ -93,3 +93,9 @@ void AMainPlayerController::InputDash()
 	if (!CachedCharacter) return;
 }
 
+void AMainPlayerController::InputChangeWeapon()
+{
+	if (!CachedCharacter) return;
+
+	CachedCharacter->RequestChangeNextWeapon();
+}

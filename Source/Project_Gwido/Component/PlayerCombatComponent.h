@@ -4,12 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Component/CombatComponent.h"
+#include "Enum/WeaponTypes.h"
+#include "Delegates/DelegateCombinations.h"
+
 #include "PlayerCombatComponent.generated.h"
 
 class APlayerCharacter;
-/**
- * 
- */
+class UWeaponCombatData;
+class UComboData;
+class UAnimMontage;
+
+
 UCLASS()
 class PROJECT_GWIDO_API UPlayerCombatComponent : public UCombatComponent
 {
@@ -17,28 +22,18 @@ class PROJECT_GWIDO_API UPlayerCombatComponent : public UCombatComponent
 
 public:
 
+
+
+	UComboData* GetCurrentComboData() const;
+
 #pragma region BaseAttack
-
-	int32 CurrentComboCount = 0;
-
-	FTimerHandle ComboTimerHandle;
-
-	bool bHasComboInput = false;
 
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
 	float ComboCheckTime = 0.45f;
 
-	int32 CurrentWeaponIndex = 0;
+	void SetWeaponCombatData(UWeaponCombatData* NewWeaponData);
 
 	void BaseAttack();
-
-	void ComboStart();
-
-	void ComboEnd(UAnimMontage* Montage, bool bInterrupted);
-
-	void ComboCheck();
-
-	void SetComboTimer();
 
 #pragma endregion
 	
@@ -48,4 +43,32 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<APlayerCharacter> OwnerPlayer;
+
+#pragma region BaseAttack
+
+	UPROPERTY()
+	TObjectPtr<UWeaponCombatData> CurrentWeaponData;
+
+	int32 CurrentComboCount = 0;
+
+	bool bHasComboInput = false;
+
+	FTimerHandle ComboTimerHandle;
+
+	void ComboStart();
+
+	void ComboEnd(UAnimMontage* Montage, bool bInterrupted);
+
+	void ComboCheck();
+
+	void SetComboTimer();
+
+	void ResetCombo();
+
+	void HandleWeaponDataChanged(UWeaponCombatData* PreviousWeaponData, UWeaponCombatData* NewWeaponData);
+
+
+#pragma endregion
+
+
 };

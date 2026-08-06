@@ -46,6 +46,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> IA_Dash;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_ChangeWeapon;
+
 #pragma endregion 
 
 private:
@@ -62,6 +65,7 @@ private:
 	void InputSprint_End();
 	void InputBaseAttack();
 	void InputDash();
+	void InputChangeWeapon();
 
 
 

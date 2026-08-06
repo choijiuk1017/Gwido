@@ -4,6 +4,7 @@
 #include "Character/PlayerCharacter.h"
 
 #include "Component/PlayerCombatComponent.h"
+#include "DataAsset/WeaponCombatData.h"
 
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -54,6 +55,8 @@ void APlayerCharacter::BeginPlay()
     Super::BeginPlay();
 
     Faction = EUnitFaction::Player;
+
+    CombatComponent->SetWeaponCombatData(WeaponCombatDatas[CurrentWeaponIndex]);
 }
 
 #pragma region Movement
@@ -105,5 +108,20 @@ void APlayerCharacter::EndSprint()
 
 void APlayerCharacter::RequestBaseAttack()
 {
+    if (!CombatComponent) return;
+
     CombatComponent->BaseAttack();
+}
+
+void APlayerCharacter::RequestChangeNextWeapon()
+{
+    if (!CombatComponent || WeaponCombatDatas.IsEmpty()) return;
+
+    CurrentWeaponIndex = (CurrentWeaponIndex + 1) % WeaponCombatDatas.Num();
+
+    UWeaponCombatData* NewWeaponData = WeaponCombatDatas[CurrentWeaponIndex];
+
+    if (!IsValid(NewWeaponData)) return;
+
+    CombatComponent->SetWeaponCombatData(NewWeaponData);
 }

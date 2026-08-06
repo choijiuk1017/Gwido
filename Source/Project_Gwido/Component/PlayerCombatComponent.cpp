@@ -35,6 +35,15 @@ void UPlayerCombatComponent::BaseAttack()
 {
 	if (!OwnerPlayer) return;
 
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("공격 실행 / WeaponData: %s / ComboData: %s / ComboCount: %d"),
+		*GetNameSafe(CurrentWeaponData),
+		*GetNameSafe(GetCurrentComboData()),
+		CurrentComboCount
+	);
+
 	if (OwnerPlayer->IsDead()) return;
 
 	if (CurrentComboCount == 0)
@@ -107,23 +116,30 @@ void UPlayerCombatComponent::ComboCheck()
 
 	UComboData* ComboData = GetCurrentComboData();
 
-	if (!ComboData || !ComboData->ComboMontage)
+	if (!ComboData || !ComboData->ComboMontage) return;
+
+	if (CurrentComboCount >= ComboData->MaxComboCount)
 	{
+		bHasComboInput = false;
 		return;
 	}
 
-	CurrentComboCount = FMath::Clamp(CurrentComboCount + 1, 1, ComboData->MaxComboCount);
-
 	UAnimInstance* AnimInstance = OwnerPlayer->GetMesh()->GetAnimInstance();
+
 	if (!AnimInstance) return;
 
-	const FName SectionName =
-		*FString::Printf(TEXT("%s%d"), *ComboData->SectionPrefix, CurrentComboCount);
+	const FName CurrentSectionName(*FString::Printf(TEXT("%s%d"), *ComboData->SectionPrefix, CurrentComboCount));
 
-	AnimInstance->Montage_JumpToSection(SectionName, ComboData->ComboMontage);
+	const int32 NextComboCount = CurrentComboCount + 1;
+
+	const FName NextSectionName(*FString::Printf(TEXT("%s%d"), *ComboData->SectionPrefix, NextComboCount));
+
+	AnimInstance->Montage_SetNextSection(CurrentSectionName, NextSectionName, ComboData->ComboMontage);
+
+	CurrentComboCount = NextComboCount;
+	bHasComboInput = false;
 
 	SetComboTimer();
-	bHasComboInput = false;
 }
 
 void UPlayerCombatComponent::SetComboTimer()

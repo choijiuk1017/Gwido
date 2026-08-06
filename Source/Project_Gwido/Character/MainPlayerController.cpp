@@ -33,6 +33,7 @@ void AMainPlayerController::SetupInputComponent()
 	EIC->BindAction(IA_Sprint, ETriggerEvent::Triggered, this, &AMainPlayerController::InputSprint_Begin);
 	EIC->BindAction(IA_Sprint, ETriggerEvent::Completed, this, &AMainPlayerController::InputSprint_End);
 	EIC->BindAction(IA_BaseAttack, ETriggerEvent::Started, this, &AMainPlayerController::InputBaseAttack);
+	EIC->BindAction(IA_ChangeWeapon, ETriggerEvent::Started, this, &AMainPlayerController::InputChangeWeapon);
 }
 
 void AMainPlayerController::OnPossess(APawn* InPawn)

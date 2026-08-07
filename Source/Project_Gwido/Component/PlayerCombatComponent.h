@@ -3,61 +3,43 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Component/CombatComponent.h"
-#include "Enum/WeaponTypes.h"
-#include "Delegates/DelegateCombinations.h"
-
+#include "Components/ActorComponent.h"
 #include "PlayerCombatComponent.generated.h"
 
 class APlayerCharacter;
-class UWeaponCombatData;
+class AWeapon;
+
 class UComboData;
-class UAnimMontage;
+class UWeaponCombatData;
+class UWeaponItemData;
 
-
-UCLASS()
-class PROJECT_GWIDO_API UPlayerCombatComponent : public UCombatComponent
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class PROJECT_GWIDO_API UPlayerCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 
-
-
-	UComboData* GetCurrentComboData() const;
-
-#pragma region BaseAttack
-
-	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
-	float ComboCheckTime = 0.45f;
-
-	void SetWeaponCombatData(UWeaponCombatData* NewWeaponData);
+	UPlayerCombatComponent();
 
 	void BaseAttack();
 
-#pragma endregion
-	
+	void InitializeWeapons(const TArray<TObjectPtr<UWeaponItemData>>& InWeaponDatas);
+
+	void SetWeaponCombatData(UWeaponCombatData* NewWeaponData);
+
+	void ChangeWeapon(int32 NewWeaponIndex, UWeaponCombatData* NewWeaponCombatData);
+
+	void ApplyPendingWeaponChange();
+
 protected:
+
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY()
-	TObjectPtr<APlayerCharacter> OwnerPlayer;
-
-#pragma region BaseAttack
-
-	UPROPERTY()
-	TObjectPtr<UWeaponCombatData> CurrentWeaponData;
-
-	int32 CurrentComboCount = 0;
-
-	bool bHasComboInput = false;
-
-	FTimerHandle ComboTimerHandle;
-
 	void ComboStart();
 
-	void ComboEnd(UAnimMontage* Montage, bool bInterrupted);
+	void ComboEnd(UAnimMontage* Montage,bool bInterrupted);
 
 	void ComboCheck();
 
@@ -65,10 +47,42 @@ private:
 
 	void ResetCombo();
 
-	void HandleWeaponDataChanged(UWeaponCombatData* PreviousWeaponData, UWeaponCombatData* NewWeaponData);
+	UComboData* GetCurrentComboData() const;
+
+	void HandleWeaponDataChanged(UWeaponCombatData* PreviousWeaponData,UWeaponCombatData* NewWeaponData);
 
 
-#pragma endregion
+private:
+	UPROPERTY()
+	TObjectPtr<APlayerCharacter> OwnerPlayer;
 
+	UPROPERTY()
+	TObjectPtr<UWeaponCombatData> CurrentWeaponData;
 
+	UPROPERTY()
+	TObjectPtr<UWeaponCombatData> PendingWeaponData;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UWeaponItemData>> WeaponEquipDatas;
+
+	UPROPERTY()
+	TObjectPtr<UWeaponItemData> CurrentEquipWeaponData;
+
+	UPROPERTY()
+	TArray<TObjectPtr<AWeapon>> SpawnedWeapons;
+
+	UPROPERTY()
+	TObjectPtr<AWeapon> EquippedWeapon;
+
+	int32 CurrentWeaponIndex = INDEX_NONE;
+
+	int32 PendingWeaponIndex = INDEX_NONE;
+
+	bool bIsChangingWeapon = false;
+
+	int32 CurrentComboCount = 0;
+
+	bool bHasComboInput = false;
+
+	FTimerHandle ComboTimerHandle;
 };

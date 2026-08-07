@@ -5,6 +5,7 @@
 
 #include "Component/PlayerCombatComponent.h"
 #include "DataAsset/WeaponCombatData.h"
+#include "DataAsset/ItemData/WeaponItemData.h"
 
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -57,6 +58,13 @@ void APlayerCharacter::BeginPlay()
     Faction = EUnitFaction::Player;
 
     CombatComponent->SetWeaponCombatData(WeaponCombatDatas[CurrentWeaponIndex]);
+
+    CombatComponent->InitializeWeapons(WeaponDatas);
+}
+
+UPlayerCombatComponent* APlayerCharacter::GetCombatComponent()
+{
+    return CombatComponent;
 }
 
 #pragma region Movement
@@ -115,13 +123,21 @@ void APlayerCharacter::RequestBaseAttack()
 
 void APlayerCharacter::RequestChangeNextWeapon()
 {
-    if (!CombatComponent || WeaponCombatDatas.IsEmpty()) return;
+    if (!CombatComponent) return;
 
-    CurrentWeaponIndex = (CurrentWeaponIndex + 1) % WeaponCombatDatas.Num();
+    if (WeaponDatas.IsEmpty() || WeaponCombatDatas.IsEmpty()) return;
 
-    UWeaponCombatData* NewWeaponData = WeaponCombatDatas[CurrentWeaponIndex];
+    const int32 NewWeaponIndex = (CurrentWeaponIndex + 1) % WeaponDatas.Num();
 
-    if (!IsValid(NewWeaponData)) return;
+    if (!WeaponDatas.IsValidIndex(NewWeaponIndex)) return;
 
-    CombatComponent->SetWeaponCombatData(NewWeaponData);
+    if (!WeaponCombatDatas.IsValidIndex(NewWeaponIndex)) return;
+
+    UWeaponCombatData* NewWeaponCombatData = WeaponCombatDatas[NewWeaponIndex];
+
+    if (!IsValid(NewWeaponCombatData)) return;
+
+    CombatComponent->ChangeWeapon(NewWeaponIndex, NewWeaponCombatData);
+
+    CurrentWeaponIndex = NewWeaponIndex;
 }

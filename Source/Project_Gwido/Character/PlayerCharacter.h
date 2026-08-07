@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Character/Unit.h"
+#include "Enum/WeaponTypes.h"
 #include "PlayerCharacter.generated.h"
 
 class UAnimMontage;
 class UPlayerCombatComponent;
 class UWeaponCombatData;
-
+class UWeaponItemData;
 /**
  * 
  */
@@ -20,6 +21,8 @@ class PROJECT_GWIDO_API APlayerCharacter : public AUnit
 	
 public:
 	APlayerCharacter();
+
+	UPlayerCombatComponent* GetCombatComponent();
 
 #pragma region Movement
 
@@ -37,6 +40,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	TArray<TObjectPtr<UWeaponCombatData>> WeaponCombatDatas;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TArray<TObjectPtr<UWeaponItemData>> WeaponDatas;
 
 	void RequestBaseAttack();
 

@@ -6,15 +6,77 @@
 #include "Character/PlayerCharacter.h"
 #include "DataAsset/ComboData.h"
 #include "DataAsset/WeaponCombatData.h"
+#include "DataAsset/ItemData/WeaponItemData.h"
+#include "Actor/Weapon/Weapon.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+
+UPlayerCombatComponent::UPlayerCombatComponent()
+{
+	PrimaryComponentTick.bCanEverTick = false;
+}
 
 void UPlayerCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	OwnerPlayer = Cast<APlayerCharacter>(GetOwner());
+}
+
+void UPlayerCombatComponent::InitializeWeapons(const TArray<TObjectPtr<UWeaponItemData>>& InWeaponDatas)
+{
+	if (!OwnerPlayer) return;
+
+	WeaponEquipDatas = InWeaponDatas;
+
+	if (WeaponEquipDatas.IsEmpty()) return;
+
+	SpawnedWeapons.Empty();
+
+	for (UWeaponItemData* WeaponData : WeaponEquipDatas)
+	{
+		if (!WeaponData || !WeaponData->Weapon)
+		{
+			SpawnedWeapons.Add(nullptr);
+			continue;
+		}
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = OwnerPlayer;
+
+		AWeapon* SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(
+			WeaponData->Weapon,
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			SpawnParams
+		);
+
+		if (!SpawnedWeapon)
+		{
+			SpawnedWeapons.Add(nullptr);
+			continue;
+		}
+
+		SpawnedWeapon->AttachToComponent(OwnerPlayer->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("Weapon"));
+
+		SpawnedWeapon->SetActorHiddenInGame(true);
+
+		SpawnedWeapon->SetActorEnableCollision(false);
+
+		SpawnedWeapons.Add(SpawnedWeapon);
+	}
+
+	if (SpawnedWeapons.IsValidIndex(0) &&IsValid(SpawnedWeapons[0]))
+	{
+		CurrentWeaponIndex = 0;
+
+		CurrentEquipWeaponData = WeaponEquipDatas[0];
+
+		EquippedWeapon = SpawnedWeapons[0];
+
+		EquippedWeapon->SetActorHiddenInGame(false);
+	}
 }
 
 void UPlayerCombatComponent::SetWeaponCombatData(UWeaponCombatData* NewWeaponData)
@@ -34,15 +96,6 @@ void UPlayerCombatComponent::SetWeaponCombatData(UWeaponCombatData* NewWeaponDat
 void UPlayerCombatComponent::BaseAttack()
 {
 	if (!OwnerPlayer) return;
-
-	UE_LOG(
-		LogTemp,
-		Warning,
-		TEXT("공격 실행 / WeaponData: %s / ComboData: %s / ComboCount: %d"),
-		*GetNameSafe(CurrentWeaponData),
-		*GetNameSafe(GetCurrentComboData()),
-		CurrentComboCount
-	);
 
 	if (OwnerPlayer->IsDead()) return;
 
@@ -195,7 +248,41 @@ void UPlayerCombatComponent::HandleWeaponDataChanged(UWeaponCombatData* Previous
 {
 	if (!OwnerPlayer || !CurrentWeaponData) return;
 
-	// 무기 변경 시 로직
+	UAnimInstance* AnimInstance = OwnerPlayer->GetMesh()->GetAnimInstance();
+
+	if (!AnimInstance) return;
+
+	if (!PreviousWeaponData || !PreviousWeaponData->UnequipMontage)
+	{
+		if (NewWeaponData->EquipMontage)
+		{
+			AnimInstance->Montage_Play(NewWeaponData->EquipMontage);
+		}
+
+		return;
+	}
+
+	AnimInstance->Montage_Play(PreviousWeaponData->UnequipMontage);
+
+	FOnMontageEnded EndDelegate;
+
+	EndDelegate.BindLambda([this, NewWeaponData](UAnimMontage* Montage,bool bInterrupted)
+	{
+			if (!OwnerPlayer || bInterrupted) return;
+
+			UAnimInstance* AnimInstance = OwnerPlayer->GetMesh()->GetAnimInstance();
+
+			if (!AnimInstance) return;
+
+			if (NewWeaponData && NewWeaponData->EquipMontage)
+			{
+				AnimInstance->Montage_Play(NewWeaponData->EquipMontage);
+			}
+	}
+	);
+
+	AnimInstance->Montage_SetEndDelegate(EndDelegate,PreviousWeaponData->UnequipMontage);
+
 }
 
 UComboData* UPlayerCombatComponent::GetCurrentComboData() const
@@ -206,4 +293,113 @@ UComboData* UPlayerCombatComponent::GetCurrentComboData() const
 	}
 
 	return CurrentWeaponData->ComboData;
+}
+
+void UPlayerCombatComponent::ChangeWeapon(int32 NewWeaponIndex, UWeaponCombatData* NewWeaponCombatData)
+{
+	if (bIsChangingWeapon) return;
+
+	if (!WeaponEquipDatas.IsValidIndex(NewWeaponIndex)) return;
+
+	if (!SpawnedWeapons.IsValidIndex(NewWeaponIndex)) return;
+
+	if (!IsValid(SpawnedWeapons[NewWeaponIndex])) return;
+
+	if (!IsValid(NewWeaponCombatData)) return;
+
+	if (CurrentWeaponIndex == NewWeaponIndex) return;
+
+	ResetCombo();
+
+	bIsChangingWeapon = true;
+
+	PendingWeaponIndex = NewWeaponIndex;
+
+	PendingWeaponData = NewWeaponCombatData;
+
+	if (!OwnerPlayer)
+	{
+		bIsChangingWeapon = false;
+		return;
+	}
+
+	UAnimInstance* AnimInstance = OwnerPlayer->GetMesh()->GetAnimInstance();
+
+	if (!AnimInstance)
+	{
+		bIsChangingWeapon = false;
+		return;
+	}
+
+
+	if (CurrentWeaponData && CurrentWeaponData->UnequipMontage)
+	{
+		AnimInstance->Montage_Play(CurrentWeaponData->UnequipMontage);
+	}
+	else
+	{
+		ApplyPendingWeaponChange();
+	}
+}
+
+void UPlayerCombatComponent::ApplyPendingWeaponChange()
+{
+	if (!WeaponEquipDatas.IsValidIndex(PendingWeaponIndex))
+	{
+		bIsChangingWeapon = false;
+		return;
+	}
+
+	if (!SpawnedWeapons.IsValidIndex(PendingWeaponIndex))
+	{
+		bIsChangingWeapon = false;
+		return;
+	}
+
+	AWeapon* NewWeapon = SpawnedWeapons[PendingWeaponIndex];
+
+	if (!IsValid(NewWeapon))
+	{
+		bIsChangingWeapon = false;
+		return;
+	}
+
+
+	if (IsValid(EquippedWeapon))
+	{
+		EquippedWeapon->SetActorHiddenInGame(true);
+
+		EquippedWeapon->SetActorEnableCollision(false);
+	}
+
+
+
+	CurrentWeaponIndex = PendingWeaponIndex;
+
+	CurrentEquipWeaponData = WeaponEquipDatas[CurrentWeaponIndex];
+
+	EquippedWeapon = NewWeapon;
+
+	CurrentWeaponData = PendingWeaponData;
+
+	EquippedWeapon->SetActorHiddenInGame(false);
+
+	EquippedWeapon->SetActorEnableCollision(false);
+
+
+	if (OwnerPlayer && CurrentWeaponData && CurrentWeaponData->EquipMontage)
+	{
+		UAnimInstance* AnimInstance = OwnerPlayer->GetMesh()->GetAnimInstance();
+
+		if (AnimInstance)
+		{
+			AnimInstance->Montage_Play(CurrentWeaponData->EquipMontage);
+		}
+	}
+
+	PendingWeaponIndex = INDEX_NONE;
+
+	PendingWeaponData = nullptr;
+
+	bIsChangingWeapon = false;
 }

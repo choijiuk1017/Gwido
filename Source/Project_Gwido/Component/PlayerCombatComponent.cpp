@@ -297,109 +297,87 @@ UComboData* UPlayerCombatComponent::GetCurrentComboData() const
 
 void UPlayerCombatComponent::ChangeWeapon(int32 NewWeaponIndex, UWeaponCombatData* NewWeaponCombatData)
 {
-	if (bIsChangingWeapon) return;
-
+	if (!OwnerPlayer) return;
+	if (!NewWeaponCombatData) return;
 	if (!WeaponEquipDatas.IsValidIndex(NewWeaponIndex)) return;
-
 	if (!SpawnedWeapons.IsValidIndex(NewWeaponIndex)) return;
-
-	if (!IsValid(SpawnedWeapons[NewWeaponIndex])) return;
-
-	if (!IsValid(NewWeaponCombatData)) return;
-
-	if (CurrentWeaponIndex == NewWeaponIndex) return;
-
-	ResetCombo();
-
-	bIsChangingWeapon = true;
-
-	PendingWeaponIndex = NewWeaponIndex;
-
-	PendingWeaponData = NewWeaponCombatData;
-
-	if (!OwnerPlayer)
-	{
-		bIsChangingWeapon = false;
-		return;
-	}
 
 	UAnimInstance* AnimInstance = OwnerPlayer->GetMesh()->GetAnimInstance();
 
-	if (!AnimInstance)
+	if (!AnimInstance) return;
+
+	ResetCombo();
+
+	PendingWeaponIndex = NewWeaponIndex;
+	PendingWeaponData = NewWeaponCombatData;
+
+	if (!CurrentWeaponData || !CurrentWeaponData->UnequipMontage)
 	{
-		bIsChangingWeapon = false;
-		return;
-	}
+		CurrentWeaponIndex = PendingWeaponIndex;
+		CurrentEquipWeaponData = WeaponEquipDatas[PendingWeaponIndex];
+		CurrentWeaponData = PendingWeaponData;
 
-
-	if (CurrentWeaponData && CurrentWeaponData->UnequipMontage)
-	{
-		AnimInstance->Montage_Play(CurrentWeaponData->UnequipMontage);
-	}
-	else
-	{
-		ApplyPendingWeaponChange();
-	}
-}
-
-void UPlayerCombatComponent::ApplyPendingWeaponChange()
-{
-	if (!WeaponEquipDatas.IsValidIndex(PendingWeaponIndex))
-	{
-		bIsChangingWeapon = false;
-		return;
-	}
-
-	if (!SpawnedWeapons.IsValidIndex(PendingWeaponIndex))
-	{
-		bIsChangingWeapon = false;
-		return;
-	}
-
-	AWeapon* NewWeapon = SpawnedWeapons[PendingWeaponIndex];
-
-	if (!IsValid(NewWeapon))
-	{
-		bIsChangingWeapon = false;
-		return;
-	}
-
-
-	if (IsValid(EquippedWeapon))
-	{
-		EquippedWeapon->SetActorHiddenInGame(true);
-
-		EquippedWeapon->SetActorEnableCollision(false);
-	}
-
-
-
-	CurrentWeaponIndex = PendingWeaponIndex;
-
-	CurrentEquipWeaponData = WeaponEquipDatas[CurrentWeaponIndex];
-
-	EquippedWeapon = NewWeapon;
-
-	CurrentWeaponData = PendingWeaponData;
-
-	EquippedWeapon->SetActorHiddenInGame(false);
-
-	EquippedWeapon->SetActorEnableCollision(false);
-
-
-	if (OwnerPlayer && CurrentWeaponData && CurrentWeaponData->EquipMontage)
-	{
-		UAnimInstance* AnimInstance = OwnerPlayer->GetMesh()->GetAnimInstance();
-
-		if (AnimInstance)
+		if (CurrentWeaponData->EquipMontage)
 		{
 			AnimInstance->Montage_Play(CurrentWeaponData->EquipMontage);
 		}
+
+		return;
 	}
 
+	UAnimMontage* UnequipMontage = CurrentWeaponData->UnequipMontage;
+
+	AnimInstance->Montage_Play(UnequipMontage);
+
+	FOnMontageEnded EndDelegate;
+
+	EndDelegate.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+	{
+			if (bInterrupted || !OwnerPlayer) return;
+
+			if (!WeaponEquipDatas.IsValidIndex(PendingWeaponIndex)) return;
+
+			UAnimInstance* AnimInstance = OwnerPlayer->GetMesh()->GetAnimInstance();
+
+			if (!AnimInstance) return;
+
+			CurrentWeaponIndex = PendingWeaponIndex;
+			CurrentEquipWeaponData = WeaponEquipDatas[PendingWeaponIndex];
+
+			CurrentWeaponData = PendingWeaponData;
+
+			if (CurrentWeaponData && CurrentWeaponData->EquipMontage)
+			{
+				AnimInstance->Montage_Play(CurrentWeaponData->EquipMontage);
+			}
+	});
+
+	AnimInstance->Montage_SetEndDelegate(EndDelegate,UnequipMontage);
+}
+
+void UPlayerCombatComponent::HideCurrentWeapon()
+{
+	if (!IsValid(EquippedWeapon)) return;
+
+	EquippedWeapon->SetActorHiddenInGame(true);
+}
+
+void UPlayerCombatComponent::ShowPendingWeapon()
+{
+	if (!SpawnedWeapons.IsValidIndex(PendingWeaponIndex)) return;
+
+	if (!WeaponEquipDatas.IsValidIndex(PendingWeaponIndex)) return;
+
+	AWeapon* NewWeapon = SpawnedWeapons[PendingWeaponIndex];
+
+	if (!IsValid(NewWeapon)) return;
+
+	EquippedWeapon = NewWeapon;
+	CurrentWeaponIndex = PendingWeaponIndex;
+	CurrentEquipWeaponData = WeaponEquipDatas[PendingWeaponIndex];
+
+	EquippedWeapon->SetActorHiddenInGame(false);
+
 	PendingWeaponIndex = INDEX_NONE;
-
 	PendingWeaponData = nullptr;
-
-	bIsChangingWeapon = false;
 }

@@ -30,7 +30,10 @@ public:
 
 	void ChangeWeapon(int32 NewWeaponIndex, UWeaponCombatData* NewWeaponCombatData);
 
-	void ApplyPendingWeaponChange();
+	void HideCurrentWeapon();
+
+	void ShowPendingWeapon();
+
 
 protected:
 

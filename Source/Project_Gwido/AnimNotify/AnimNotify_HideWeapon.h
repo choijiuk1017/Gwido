@@ -4,16 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "AnimNotify_ChangeWeapon.generated.h"
+#include "AnimNotify_HideWeapon.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_GWIDO_API UAnimNotify_ChangeWeapon : public UAnimNotify
+class PROJECT_GWIDO_API UAnimNotify_HideWeapon : public UAnimNotify
 {
 	GENERATED_BODY()
-
+	
 public:
-	virtual void Notify(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation) override;
+
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+
 };

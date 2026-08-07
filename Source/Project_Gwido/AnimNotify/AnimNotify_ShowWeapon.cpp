@@ -1,12 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AnimNotify/AnimNotify_ChangeWeapon.h"
+#include "AnimNotify/AnimNotify_ShowWeapon.h"
+
 
 #include "Character/PlayerCharacter.h"
 #include "Component/PlayerCombatComponent.h"
 
-void UAnimNotify_ChangeWeapon::Notify(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation)
+void UAnimNotify_ShowWeapon::Notify(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation)
 {
 	Super::Notify(MeshComp, Animation);
 
@@ -20,5 +21,5 @@ void UAnimNotify_ChangeWeapon::Notify(USkeletalMeshComponent* MeshComp,UAnimSequ
 
 	if (!CombatComponent) return;
 
-	CombatComponent->ApplyPendingWeaponChange();
+	CombatComponent->ShowPendingWeapon();
 }

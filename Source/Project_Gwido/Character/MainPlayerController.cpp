@@ -34,6 +34,7 @@ void AMainPlayerController::SetupInputComponent()
 	EIC->BindAction(IA_Sprint, ETriggerEvent::Completed, this, &AMainPlayerController::InputSprint_End);
 	EIC->BindAction(IA_BaseAttack, ETriggerEvent::Started, this, &AMainPlayerController::InputBaseAttack);
 	EIC->BindAction(IA_ChangeWeapon, ETriggerEvent::Started, this, &AMainPlayerController::InputChangeWeapon);
+	EIC->BindAction(IA_Jump, ETriggerEvent::Started, this, &AMainPlayerController::InputJump);
 }
 
 void AMainPlayerController::OnPossess(APawn* InPawn)
@@ -52,7 +53,8 @@ void AMainPlayerController::OnUnPossess()
 
 void AMainPlayerController::InputMove(const FInputActionValue& Value)
 {
-	if (!CachedCharacter) return;
+	if (!CachedCharacter || CachedCharacter->bIsAttacking) return;
+
 
 	const FVector2D MovementInput = Value.Get<FVector2D>();
 
@@ -70,7 +72,7 @@ void AMainPlayerController::InputLook(const FInputActionValue& Value)
 
 void AMainPlayerController::InputSprint_Begin()
 {
-	if (!CachedCharacter) return;
+	if (!CachedCharacter || CachedCharacter->bIsAttacking) return;
 
 	CachedCharacter->BeginSprint();
 }
@@ -99,4 +101,11 @@ void AMainPlayerController::InputChangeWeapon()
 	if (!CachedCharacter) return;
 
 	CachedCharacter->RequestChangeNextWeapon();
+}
+
+void AMainPlayerController::InputJump()
+{
+	if (!CachedCharacter) return;
+
+	CachedCharacter->Jump();
 }

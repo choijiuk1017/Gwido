@@ -381,3 +381,91 @@ void UPlayerCombatComponent::ShowPendingWeapon()
 	PendingWeaponIndex = INDEX_NONE;
 	PendingWeaponData = nullptr;
 }
+
+void UPlayerCombatComponent::DashToNearestEnemy(float SearchRadius, float MoveDistance, float StopDistance)
+{
+	if (!OwnerPlayer) return;
+
+	const FVector PlayerLocation = OwnerPlayer->GetActorLocation();
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+	TArray<AActor*> IgnoreActors;
+
+	IgnoreActors.Add(OwnerPlayer);
+
+	TArray<AActor*> OverlapActors;
+
+	UKismetSystemLibrary::SphereOverlapActors(
+		GetWorld(),
+		PlayerLocation,
+		SearchRadius,
+		ObjectTypes,
+		AActor::StaticClass(),
+		IgnoreActors,
+		OverlapActors
+	);
+
+	AActor* NearestEnemy = nullptr;
+
+	float NearestDistanceSq = FLT_MAX;
+
+	for (AActor* Actor : OverlapActors)
+	{
+		if (!IsValid(Actor)) continue;
+
+		if (!Actor->ActorHasTag(TEXT("Enemy"))) continue;
+
+		FVector ToEnemy = Actor->GetActorLocation() - PlayerLocation;
+
+		ToEnemy.Z = 0.0f;
+
+		const float DistanceSq = ToEnemy.SizeSquared();
+
+		if (DistanceSq < NearestDistanceSq)
+		{
+			NearestDistanceSq = DistanceSq;
+			NearestEnemy = Actor;
+		}
+	}
+
+	if (!NearestEnemy) return;
+
+	FVector Direction = NearestEnemy->GetActorLocation() - PlayerLocation;
+
+	Direction.Z = 0.0f;
+
+	const float Distance = Direction.Size();
+
+	if (Distance <= StopDistance)
+	{
+		return;
+	}
+
+	Direction.Normalize();
+
+	OwnerPlayer->SetActorRotation(Direction.Rotation());
+
+	const float RemainingDistance = Distance - StopDistance;
+
+	const float ActualMoveDistance = FMath::Min(MoveDistance, RemainingDistance);
+
+	const FVector TargetLocation = PlayerLocation + Direction * ActualMoveDistance;
+
+	OwnerPlayer->SetActorLocation(TargetLocation, true);
+}
+
+void UPlayerCombatComponent::ApplyRecoil(float RecoilDistance)
+{
+	if (!OwnerPlayer) return;
+
+	FVector BackwardDirection = -OwnerPlayer->GetActorForwardVector();
+	BackwardDirection.Z = 0.0f;
+	BackwardDirection.Normalize();
+
+	const FVector TargetLocation = OwnerPlayer->GetActorLocation() + BackwardDirection * RecoilDistance;
+
+	OwnerPlayer->SetActorLocation(TargetLocation,true);
+}

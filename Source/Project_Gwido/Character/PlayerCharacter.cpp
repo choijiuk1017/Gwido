@@ -68,6 +68,7 @@ UPlayerCombatComponent* APlayerCharacter::GetCombatComponent()
 }
 
 #pragma region Movement
+
 void APlayerCharacter::Move(const FVector2D& MovementInput)
 {
     if (!Controller)

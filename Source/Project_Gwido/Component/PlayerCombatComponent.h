@@ -30,9 +30,17 @@ public:
 
 	void ChangeWeapon(int32 NewWeaponIndex, UWeaponCombatData* NewWeaponCombatData);
 
+#pragma region AnimNotify
+
 	void HideCurrentWeapon();
 
 	void ShowPendingWeapon();
+
+	void DashToNearestEnemy(float SearchRadius, float MoveDistance, float StopDistance);
+
+	void ApplyRecoil(float RecoilDistance);
+
+#pragma endregion
 
 
 protected:
@@ -40,22 +48,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void ComboStart();
 
-	void ComboEnd(UAnimMontage* Montage,bool bInterrupted);
-
-	void ComboCheck();
-
-	void SetComboTimer();
-
-	void ResetCombo();
-
-	UComboData* GetCurrentComboData() const;
-
-	void HandleWeaponDataChanged(UWeaponCombatData* PreviousWeaponData,UWeaponCombatData* NewWeaponData);
-
-
-private:
 	UPROPERTY()
 	TObjectPtr<APlayerCharacter> OwnerPlayer;
 
@@ -88,4 +81,20 @@ private:
 	bool bHasComboInput = false;
 
 	FTimerHandle ComboTimerHandle;
+
+	void ComboStart();
+
+	void ComboEnd(UAnimMontage* Montage,bool bInterrupted);
+
+	void ComboCheck();
+
+	void SetComboTimer();
+
+	void ResetCombo();
+
+	UComboData* GetCurrentComboData() const;
+
+	void HandleWeaponDataChanged(UWeaponCombatData* PreviousWeaponData,UWeaponCombatData* NewWeaponData);
+
+	
 };

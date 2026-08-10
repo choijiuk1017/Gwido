@@ -49,6 +49,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> IA_ChangeWeapon;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_Jump;
+
 #pragma endregion 
 
 private:
@@ -66,7 +69,6 @@ private:
 	void InputBaseAttack();
 	void InputDash();
 	void InputChangeWeapon();
-
-
+	void InputJump();
 
 };
